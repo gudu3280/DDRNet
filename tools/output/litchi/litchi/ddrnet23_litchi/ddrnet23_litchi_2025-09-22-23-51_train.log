@@ -1,0 +1,84 @@
+2025-09-22 23:51:22,313 Namespace(cfg='../experiments/litchi/ddrnet23_litchi.yaml', local_rank=-1, opts=[], seed=304)
+2025-09-22 23:51:22,313 AUTO_RESUME: False
+CUDNN:
+  BENCHMARK: True
+  DETERMINISTIC: False
+  ENABLED: True
+DATASET:
+  DATASET: litchi
+  EXTRA_TRAIN_SET: 
+  MODEL: train
+  NUM_CLASSES: 3
+  ROOT: data1/
+  TEST_SET: data/list/litchi/val.lst
+  TRAIN_SET: data/list/litchi/train.lst
+DEBUG:
+  DEBUG: False
+  SAVE_BATCH_IMAGES_GT: False
+  SAVE_BATCH_IMAGES_PRED: False
+  SAVE_HEATMAPS_GT: False
+  SAVE_HEATMAPS_PRED: False
+GPUS: (0,)
+LOG_DIR: log/litchi
+LOSS:
+  BALANCE_WEIGHTS: [1.0, 1.0]
+  CLASS_BALANCE: False
+  OHEMKEEP: 32768
+  OHEMTHRES: 0.9
+  USE_OHEM: True
+MODEL:
+  ALIGN_CORNERS: False
+  EXTRA:
+    
+  NAME: ddrnet_23
+  NUM_OUTPUTS: 2
+  OCR:
+    DROPOUT: 0.05
+    KEY_CHANNELS: 256
+    MID_CHANNELS: 512
+    SCALE: 1
+  PRETRAINED: pth/DDRNet23_imagenet.pth
+OUTPUT_DIR: output/litchi
+PIN_MEMORY: True
+PRINT_FREQ: 10
+RANK: 0
+TEST:
+  BASE_SIZE: 1024
+  BATCH_SIZE_PER_GPU: 8
+  FLIP_TEST: True
+  IMAGE_SIZE: [512, 512]
+  MODEL_FILE: output/litchi/litchi/ddrnet23_litchi/best_val.pth
+  MULTI_SCALE: False
+  NUM_SAMPLES: 0
+  OUTPUT_INDEX: 1
+  SCALE_LIST: [1]
+TRAIN:
+  BASE_SIZE: 1024
+  BATCH_SIZE_PER_GPU: 16
+  BEGIN_EPOCH: 0
+  DOWNSAMPLERATE: 1
+  END_EPOCH: 5
+  EXTRA_EPOCH: 0
+  EXTRA_LR: 0.001
+  FLIP: True
+  FREEZE_EPOCHS: -1
+  FREEZE_LAYERS: 
+  IGNORE_LABEL: 255
+  IMAGE_SIZE: [512, 512]
+  LR: 0.01
+  LR_FACTOR: 0.1
+  LR_STEP: [60, 80]
+  MOMENTUM: 0.9
+  MULTI_SCALE: False
+  NESTEROV: False
+  NONBACKBONE_KEYWORDS: []
+  NONBACKBONE_MULT: 10
+  NUM_SAMPLES: 0
+  OPTIMIZER: sgd
+  RANDOM_BRIGHTNESS: False
+  RANDOM_BRIGHTNESS_SHIFT_VALUE: 10
+  RESUME: False
+  SCALE_FACTOR: 16
+  SHUFFLE: True
+  WD: 0.0005
+WORKERS: 4
