@@ -1,0 +1,318 @@
+# DDRNet 模型训练详细步骤
+
+## 训练前准备
+
+### 1. 数据准备
+
+#### 数据集结构
+确保你的数据集按以下结构组织：
+```
+data1/
+├── images/          # 原始图像文件
+│   ├── 1.jpg
+│   ├── 2.jpg
+│   └── ...
+├── labels/          # 标注图像文件（PNG格式）
+│   ├── 1.png
+│   ├── 2.png
+│   └── ...
+└── list/
+    └── litchi/
+        ├── train.txt    # 训练集列表
+        ├── val.txt      # 验证集列表
+        └── test.txt     # 测试集列表
+```
+
+#### 标注图像要求
+- 格式：PNG
+- 像素值含义：
+  - 0：背景（黑色）
+  - 1：荔枝果实（绿色）
+  - 2：荔枝茎（红色）
+
+#### 数据列表文件格式
+train.txt, val.txt, test.txt 文件格式：
+```
+images/1.jpg labels/1.png
+images/2.jpg labels/2.png
+...
+```
+
+### 2. 配置文件设置
+
+编辑 `experiments/litchi/ddrnet23_slim_litchi.yaml`：
+
+```yaml
+DATASET:
+  DATASET: litchi
+  ROOT: 'data1/'
+  NUM_CLASSES: 3
+  TRAIN_SET: 'list/litchi/train.txt'
+  VALID_SET: 'list/litchi/val.txt'
+  TEST_SET: 'list/litchi/test.txt'
+
+MODEL:
+  NAME: ddrnet_23_slim
+  NUM_OUTPUTS: 1
+  PRETRAINED: 'pth/DDRNet23s_imagenet.pth'
+
+TRAIN:
+  IMAGE_SIZE: [1024, 2048]  # 根据你的图像尺寸调整
+  BASE_SIZE: 2048
+  BATCH_SIZE_PER_GPU: 2     # 根据GPU内存调整
+  SHUFFLE: true
+  BEGIN_EPOCH: 0
+  END_EPOCH: 200            # 训练轮数
+  RESUME: false
+
+  OPTIMIZER: sgd
+  LR: 0.01                  # 学习率
+  WD: 0.0005               # 权重衰减
+  MOMENTUM: 0.9
+  NESTEROV: false
+
+  LR_SCHEDULER: poly
+  LR_STEP: [90, 110]
+  LR_FACTOR: 0.1
+  POLY_LR_POWER: 0.9
+
+LOSS:
+  TYPE: crossentropy
+  BALANCE: true
+  SB_WEIGHTS: [1.0, 1.0, 1.0]  # 类别权重
+
+VALID:
+  IMAGE_SIZE: [1024, 2048]
+  BASE_SIZE: 2048
+  BATCH_SIZE_PER_GPU: 1
+```
+
+## 训练步骤
+
+### 1. 基础训练命令
+
+```bash
+# 进入项目目录
+cd D:\DDRNet.pytorch1-main
+
+# 开始训练
+python tools/train_litchi.py --cfg experiments/litchi/ddrnet23_slim_litchi.yaml
+```
+
+### 2. 高级训练选项
+
+#### 从检查点恢复训练
+```bash
+python tools/train_litchi.py \
+    --cfg experiments/litchi/ddrnet23_slim_litchi.yaml \
+    --resume pth/checkpoint.pth
+```
+
+#### 指定GPU设备
+```bash
+# 使用特定GPU
+CUDA_VISIBLE_DEVICES=0 python tools/train_litchi.py --cfg experiments/litchi/ddrnet23_slim_litchi.yaml
+
+# 使用多GPU
+CUDA_VISIBLE_DEVICES=0,1 python tools/train_litchi.py --cfg experiments/litchi/ddrnet23_slim_litchi.yaml
+```
+
+#### 调整批次大小
+```bash
+python tools/train_litchi.py \
+    --cfg experiments/litchi/ddrnet23_slim_litchi.yaml \
+    --batch-size 4
+```
+
+### 3. 训练监控
+
+#### 查看训练日志
+训练过程中会生成日志文件：
+- 位置：`tools/log/litchi/ddrnet_23_slim/`
+- 文件名：`ddrnet23_slim_litchi_时间戳_train.log`
+
+#### 监控训练指标
+训练过程中会显示：
+- **Loss**：损失值（越小越好）
+- **mIoU**：平均交并比（越大越好）
+- **Pixel Acc**：像素准确率（越大越好）
+- **Learning Rate**：当前学习率
+
+#### 示例输出
+```
+Epoch: [1][10/100]  Time 2.345 (2.123)  Data 0.123 (0.098)  
+Loss 1.234 (1.456)  mIoU 0.456 (0.423)  Pixel Acc 0.789 (0.756)  
+LR 0.01
+```
+
+## 训练参数调优
+
+### 1. 学习率调整
+
+#### 学习率过大的症状
+- 损失值震荡剧烈
+- 训练不稳定
+- 准确率提升缓慢
+
+**解决方案：**
+```yaml
+TRAIN:
+  LR: 0.005  # 减小学习率
+```
+
+#### 学习率过小的症状
+- 训练收敛很慢
+- 损失值下降缓慢
+
+**解决方案：**
+```yaml
+TRAIN:
+  LR: 0.02   # 增大学习率
+```
+
+### 2. 批次大小调整
+
+#### GPU内存不足
+```
+RuntimeError: CUDA out of memory
+```
+
+**解决方案：**
+```yaml
+TRAIN:
+  BATCH_SIZE_PER_GPU: 1  # 减小批次大小
+```
+
+#### 训练效果不佳
+如果GPU内存充足，可以增大批次大小：
+```yaml
+TRAIN:
+  BATCH_SIZE_PER_GPU: 4  # 增大批次大小
+```
+
+### 3. 数据增强设置
+
+在配置文件中添加数据增强：
+```yaml
+DATASET:
+  RANDOM_FLIP: true
+  RANDOM_SCALE: [0.5, 2.0]
+  RANDOM_ROTATION: 10
+  COLOR_JITTER: true
+```
+
+### 4. 类别权重平衡
+
+如果某些类别样本较少：
+```yaml
+LOSS:
+  SB_WEIGHTS: [0.5, 2.0, 3.0]  # 背景、荔枝、荔枝茎的权重
+```
+
+## 训练结果分析
+
+### 1. 模型保存位置
+- **最佳模型**：`pth/best_val.pth`（验证集上表现最好）
+- **最新检查点**：`pth/checkpoint.pth`（最新的训练状态）
+- **训练日志**：`tools/log/litchi/`
+
+### 2. 训练曲线分析
+
+#### 正常训练曲线
+- 损失值逐渐下降并趋于稳定
+- mIoU逐渐上升并趋于稳定
+- 验证集指标与训练集指标差距不大
+
+#### 过拟合症状
+- 训练损失继续下降，验证损失上升
+- 训练准确率很高，验证准确率较低
+
+**解决方案：**
+- 增加数据增强
+- 减小学习率
+- 提前停止训练
+- 增加正则化
+
+#### 欠拟合症状
+- 训练和验证损失都很高
+- 准确率提升缓慢
+
+**解决方案：**
+- 增大学习率
+- 增加训练轮数
+- 减少正则化
+- 检查数据质量
+
+### 3. 最佳实践
+
+#### 训练策略
+1. **预训练模型**：使用ImageNet预训练权重
+2. **学习率调度**：使用多项式衰减
+3. **数据增强**：适度使用，避免过度增强
+4. **早停策略**：监控验证集指标，避免过拟合
+
+#### 硬件建议
+- **GPU内存**：至少6GB（推荐8GB+）
+- **系统内存**：至少16GB
+- **存储**：SSD硬盘（提高数据加载速度）
+
+## 常见训练问题
+
+### 1. 内存相关
+```
+RuntimeError: CUDA out of memory
+```
+**解决方案：**
+- 减小BATCH_SIZE_PER_GPU
+- 减小图像尺寸
+- 使用梯度累积
+
+### 2. 数据加载错误
+```
+FileNotFoundError: No such file or directory
+```
+**解决方案：**
+- 检查数据路径
+- 确认列表文件格式正确
+- 验证图像和标注文件对应关系
+
+### 3. 模型加载错误
+```
+KeyError: 'model'
+```
+**解决方案：**
+- 检查预训练模型路径
+- 确认模型架构匹配
+- 重新下载预训练权重
+
+### 4. 训练中断恢复
+如果训练意外中断：
+```bash
+python tools/train_litchi.py \
+    --cfg experiments/litchi/ddrnet23_slim_litchi.yaml \
+    --resume pth/checkpoint.pth
+```
+
+## 训练完成后
+
+### 1. 模型评估
+```bash
+python tools/evaluate_litchi.py \
+    --cfg experiments/litchi/ddrnet23_slim_litchi.yaml \
+    --model_path pth/best_val.pth \
+    --output_dir tub/final_evaluation
+```
+
+### 2. 模型测试
+```bash
+python tools/inference_single_image.py \
+    --image_path test_image.jpg \
+    --model_path pth/best_val.pth \
+    --output_dir tub/test_results
+```
+
+### 3. 结果分析
+查看生成的评估报告和可视化图表，分析模型性能并决定是否需要进一步优化。
+
+数据库要自己去下载
+pth也要自己下载。
