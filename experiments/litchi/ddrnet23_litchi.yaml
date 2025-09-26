@@ -1,0 +1,57 @@
+CUDNN:
+  BENCHMARK: true
+  DETERMINISTIC: false
+  ENABLED: true
+GPUS: (0,)
+OUTPUT_DIR: 'output/litchi'
+LOG_DIR: 'log/litchi'
+WORKERS: 4
+PRINT_FREQ: 5
+
+DATASET:
+  DATASET: litchi
+  ROOT: data1/
+  TEST_SET: 'data1/list/litchi/val.lst'
+  TRAIN_SET: 'data1/list/litchi/train.lst'
+  NUM_CLASSES: 3
+MODEL:
+  NAME: ddrnet_23
+  NUM_OUTPUTS: 2
+  PRETRAINED: "pth/DDRNet23_imagenet.pth"
+  ALIGN_CORNERS: false
+LOSS:
+  USE_OHEM: true
+  OHEMTHRES: 0.9
+  OHEMKEEP: 32768
+  BALANCE_WEIGHTS: [1.0, 1.0]
+  CLASS_BALANCE: false
+TRAIN:
+  IMAGE_SIZE:
+  - 512
+  - 512
+  BASE_SIZE: 1024
+  BATCH_SIZE_PER_GPU: 4
+  SHUFFLE: true
+  BEGIN_EPOCH: 0
+  END_EPOCH: 2
+  RESUME: false
+  OPTIMIZER: sgd
+  LR: 0.01
+  WD: 0.0005
+  MOMENTUM: 0.9
+  NESTEROV: false
+  FLIP: true
+  MULTI_SCALE: false
+  DOWNSAMPLERATE: 1
+  IGNORE_LABEL: 255
+  SCALE_FACTOR: 16
+TEST:
+  IMAGE_SIZE:
+  - 512
+  - 512
+  BASE_SIZE: 1024
+  BATCH_SIZE_PER_GPU: 8
+  FLIP_TEST: true
+  MULTI_SCALE: false
+  MODEL_FILE: "output/litchi/litchi/ddrnet23_litchi/best_val.pth"
+  OUTPUT_INDEX: 1
