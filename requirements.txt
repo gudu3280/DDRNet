@@ -1,0 +1,67 @@
+# ============================================
+# DDRNet项目依赖库 - 基于实际测试生成
+# ============================================
+
+# 深度学习框架 (核心)
+torch>=2.0.0
+torchvision>=0.15.0
+# 注意: 建议使用conda安装PyTorch以获得CUDA支持
+# conda install pytorch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 pytorch-cuda=12.1 -c pytorch -c nvidia
+
+# 基础数据处理库
+numpy>=1.20.0
+opencv-python>=4.5.0
+Pillow>=8.0.0
+scipy>=1.7.0
+pandas>=1.3.0
+
+# 配置管理库
+EasyDict==1.7
+yacs>=0.1.5
+pyyaml>=5.4.0
+json-tricks>=3.15.0
+
+# 图像处理和几何计算
+shapely>=1.7.0
+scikit-image>=0.18.0
+
+# 编译和构建工具
+Cython>=0.29.0
+ninja>=1.10.0
+
+# 可视化和监控
+tensorboardX>=2.0
+matplotlib>=3.3.0
+tqdm>=4.60.0
+
+# 终端输出美化
+termcolor>=1.1.0
+tabulate>=0.8.0
+
+# ============================================
+# 可选依赖库 (增强功能)
+# ============================================
+
+# 模型转换和推理 (可选)
+# onnx>=1.12.0
+# onnxruntime>=1.12.0
+
+# 数据集处理 (可选)
+# pycocotools>=2.0
+
+# 后处理优化 (可选)
+# pydensecrf>=1.0rc3
+
+# 性能分析工具 (可选)
+# thop>=0.1.0
+
+# ============================================
+# 安装说明
+# ============================================
+# 1. 先安装PyTorch (推荐使用conda):
+#    conda install pytorch torchvision pytorch-cuda=12.1 -c pytorch -c nvidia
+# 
+# 2. 再安装其他依赖:
+#    pip install -r requirements.txt
+#
+# 3. 如需可选功能，取消对应库的注释并安装
